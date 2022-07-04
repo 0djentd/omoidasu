@@ -3,36 +3,43 @@ import click
 
 @click.group()
 def main():
+    """Main function."""
     pass
 
 
 @main.command()
-def list():
+def list_cards():
+    """List all cards."""
     pass
 
 
 @main.command()
-def review():
+def review_cards():
+    """Review all cards."""
     pass
 
 
 @main.command()
-def add():
+def add_card():
+    """Add new card."""
     pass
 
 
 @main.command()
-def remove():
+def remove_card():
+    """Remove card."""
     pass
 
 
 @main.command()
-def edit():
+def edit_card():
+    """Edit card."""
     pass
 
 
 @main.command()
 def stats():
+    """Show user stats."""
     pass
 
 
