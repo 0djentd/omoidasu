@@ -51,27 +51,34 @@ def review_cards(context):
 
 
 @cli_commands.command()
+@click.option("--question", type=str, prompt="Question")
+@click.option("--answer", type=str, prompt="Answer")
 @click.pass_context
-def add_card(context):
+def add_card(context, **kwargs):
     """Add new card."""
+    card = backend.add_card(context, **kwargs)
+    card.show(context)
 
 
 @cli_commands.command()
 @click.pass_context
-def remove_card(context):
+@click.option("--id", type=int, prompt="id")
+def remove_card(context, id: int):
     """Remove card."""
+    res = backend.remove_card(context, id)
+    pprint(res)
 
 
 @cli_commands.command()
 @click.pass_context
-def edit_card(context):
+@click.option("--id", type=int, prompt="id")
+@click.option("--question", type=str, prompt="Question")
+@click.option("--answer", type=str, prompt="Answer")
+def edit_card(context, id, question, answer):
     """Edit card."""
+    card = backend.update_card(context, id, question, answer)
+    card.show(context)
 
-
-@cli_commands.command()
-@click.pass_context
-def stats(context):
-    """Show user stats."""
 
 
 def main():
