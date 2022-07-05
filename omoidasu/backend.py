@@ -4,7 +4,6 @@ import logging
 import dataclasses
 
 import requests
-import sqlalchemy
 import appdirs
 import click
 
