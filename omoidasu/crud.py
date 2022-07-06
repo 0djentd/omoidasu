@@ -16,8 +16,7 @@ def get_cards(context, regular_expression) -> list[Card]:
     cards = [Card(**card) for card in res.json()]
     result: list[Card] = []
     for card in cards:
-        card_str = str(card)[5:-1]
-        if re.findall(regular_expression, card_str):
+        if re.findall(regular_expression, card.json()):
             result.append(card)
     return result
 

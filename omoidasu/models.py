@@ -1,16 +1,15 @@
 import logging
-import dataclasses
 import time
 
 import rich
 
 from rich.prompt import Prompt
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
 
-@dataclasses.dataclass
-class AppConfig():
+class AppConfig(BaseModel):
     """App config object."""
     debug: bool
     verbose: bool
@@ -18,8 +17,7 @@ class AppConfig():
     slow: bool
 
 
-@dataclasses.dataclass
-class Card():
+class Card(BaseModel):
     """Card model."""
     id: int
     question: str
@@ -48,7 +46,6 @@ class Card():
             self.fail += 1
 
 
-@dataclasses.dataclass
-class User():
+class User(BaseModel):
     username: str
     email: str

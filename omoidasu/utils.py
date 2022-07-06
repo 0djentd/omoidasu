@@ -1,5 +1,4 @@
 import logging
-import dataclasses
 import time
 
 import rich
@@ -25,9 +24,9 @@ def show_cards_list_grid(context, cards: list[Card], col: int = 3) -> None:
 def show_cards_list_table(context, cards: list[Card], **kwargs):
     """Show cards list as table"""
     if "title" not in kwargs:
-        kwargs['title'] = f"Cards ({len(cards)})"
+        kwargs['title'] = f"{len(cards)} cards."
     table = Table(**kwargs)
-    names = [field.name for field in dataclasses.fields(Card)]
+    names = Card.__fields__.keys()
     for name in names:
         table.add_column(header=name)
     progressbar_text = f"Generating table for {len(cards)} cards..."
