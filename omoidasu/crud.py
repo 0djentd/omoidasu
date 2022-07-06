@@ -9,10 +9,12 @@ from omoidasu.models import Card, CardAdd
 logger = logging.getLogger(__name__)
 
 
-def get_cards(context, regular_expression) -> list[Card]:
+def get_cards(context, regular_expression) -> list[Card] | None:
     """Get cards filtered by tags."""
     api = context.obj.api
     res = requests.get(f"{api}cards/")
+    if res.status_code != 200:
+        return None
     cards = [Card(**card) for card in res.json()]
     result: list[Card] = []
     for card in cards:
@@ -25,26 +27,34 @@ def get_card_by_id(context, card_id: int) -> Card | None:
     """Get cards filtered by tags."""
     api = context.obj.api
     res = requests.get(f"{api}cards/{card_id}/")
-    return Card(**res.json())
+    if res.status_code == 200:
+        return Card(**res.json())
+    return None
 
 
-def add_card(context, **kwargs) -> Card:
+def add_card(context, **kwargs) -> Card | None:
     """Add new card."""
     api = context.obj.api
     new_card = CardAdd(**kwargs)
     res = requests.post(f"{api}cards/", data=new_card.json())
-    return Card(**res.json())
+    if res.status_code == 200:
+        return Card(**res.json())
+    return None
 
 
-def remove_card(context, card_id):
+def remove_card(context, card: Card) -> bool:
     """Remove card."""
     api = context.obj.api
-    res = requests.delete(f"{api}cards/{card_id}/")
-    return res.json
+    res = requests.delete(f"{api}cards/{card.id}/")
+    if res.status_code == 200:
+        return True
+    return False
 
 
-def update_card(context, card: Card) -> Card:
+def update_card(context, card: Card) -> Card | None:
     """Update card."""
     api = context.obj.api
     res = requests.patch(f"{api}cards/{card.id}/", data=card.json())
-    return Card(**res.json())
+    if res.status_code == 200:
+        return Card(**res.json())
+    return None
