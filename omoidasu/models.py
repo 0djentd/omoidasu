@@ -49,4 +49,11 @@ class Card():
 
     def sync(self, context) -> None:
         """Sync card to server."""
-        time.sleep(0.5)
+        if context.obj.slow:
+            time.sleep(0.5)
+
+
+@dataclasses.dataclass
+class User():
+    username: str
+    email: str

@@ -11,7 +11,7 @@ import rich
 
 from rich.progress import track
 
-from omoidasu import crud, utils, models
+from omoidasu import crud, utils, models, auth
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +104,51 @@ def edit_card(context, card_id, question, answer):
     card.answer = answer
     card = crud.update_card(context, card)
     card.show(context)
+
+
+@cli_commands.group("auth")
+@click.pass_context
+def auth_commands(context):  # pylint: disable=unused-argument
+    """Authentication."""
+
+
+@auth_commands.command()
+@click.pass_context
+def status(context):
+    """Show authentication status."""
+    if context.obj.slow:
+        time.sleep(3)
+    user = auth.get_user(context)
+    if user:
+        rich.print(user)
+    else:
+        rich.print('[red]Use "omoidasu auth login" to login.[/red]')
+
+
+@auth_commands.command()
+@click.pass_context
+@click.option("--username", prompt="Username")
+@click.password_option("--password", prompt="Password")
+def login(context, username, password):
+    """Login."""
+    if context.obj.slow:
+        time.sleep(3)
+    user = auth.login(context, username, password)
+    if not user:
+        rich.print("[red]Failed to login.[/red]")
+        raise click.Abort
+    rich.print(f"[green]Logged in as {user.username}.[/green]")
+
+
+@auth_commands.command()
+@click.pass_context
+def logout(context):
+    """Logout."""
+    if context.obj.slow:
+        time.sleep(3)
+    if not auth.logout(context):
+        rich.print("[red]Failed to logout.[/red]")
+        raise click.Abort
 
 
 def main():
