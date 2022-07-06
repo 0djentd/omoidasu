@@ -4,7 +4,7 @@ import re
 
 import requests
 
-from omoidasu.models import Card
+from omoidasu.models import Card, CardAdd
 
 logger = logging.getLogger(__name__)
 
@@ -28,14 +28,12 @@ def get_card_by_id(context, card_id: int) -> Card | None:
     return Card(**res.json())
 
 
-def add_card(context, question=None, answer=None) -> Card:
+def add_card(context, **kwargs) -> Card:
     """Add new card."""
     api = context.obj.api
-    new_card = {"question": question, "answer": answer}
-    data = json.dumps(new_card)
-    res = requests.post(f"{api}cards/", data=data)
-    card = Card(**res.json())
-    return card
+    new_card = CardAdd(**kwargs)
+    res = requests.post(f"{api}cards/", data=new_card.json())
+    return Card(**res.json())
 
 
 def remove_card(context, card_id):
@@ -48,9 +46,5 @@ def remove_card(context, card_id):
 def update_card(context, card: Card) -> Card:
     """Update card."""
     api = context.obj.api
-    new_card = {"question": card.question, "answer": card.answer,
-                "ok": card.ok, "fail": card.fail, }
-    data = json.dumps(new_card)
-    res = requests.patch(f"{api}cards/{card.id}/", data=data)
-    card = Card(**res.json())
-    return card
+    res = requests.patch(f"{api}cards/{card.id}/", data=card.json())
+    return Card(**res.json())

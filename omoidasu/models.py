@@ -17,6 +17,14 @@ class AppConfig(BaseModel):
     slow: bool
 
 
+class CardAdd(BaseModel):
+    """Card add model."""
+    question: str
+    answer: str
+    ok: int = 0
+    fail: int = 0
+
+
 class Card(BaseModel):
     """Card model."""
     id: int

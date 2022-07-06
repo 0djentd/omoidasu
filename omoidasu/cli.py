@@ -57,7 +57,7 @@ def review_cards(context, regular_expression):
         card.review(context)
         rich.print()
     for card in track(cards, description=f"Sync {len(cards)} cards..."):
-        card.sync(context)
+        crud.update_card(context, card)
         if context.obj.slow:
             time.sleep(0.5)
     rich.print("[green]Done![/green]")
@@ -92,7 +92,7 @@ def remove_cards(context, regular_expression):
 
 @cli_commands.command("edit")
 @click.pass_context
-@click.option("--card-id", type=int, prompt="id")
+@click.argument("card_id", type=int, required=True)
 @click.option("--question", type=str, prompt="Question")
 @click.option("--answer", type=str, prompt="Answer")
 def edit_card(context, card_id, question, answer):
