@@ -47,11 +47,6 @@ class Card():
             rich.print("[red]Wrong![/red]")
             self.fail += 1
 
-    def sync(self, context) -> None:
-        """Sync card to server."""
-        if context.obj.slow:
-            time.sleep(0.5)
-
 
 @dataclasses.dataclass
 class User():
