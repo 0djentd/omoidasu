@@ -39,18 +39,20 @@ def cli_commands(context: click.Context, **kwargs):
 
 
 @cli_commands.command("list")
+@click.argument("regular_expression", required=True, default=".*", type=str)
 @click.pass_context
-def list_cards(context):
+def list_cards(context, regular_expression):
     """List all cards."""
-    cards = crud.get_cards(context)
+    cards = crud.get_cards(context, regular_expression)
     utils.show_cards_list_table(context, cards)
 
 
 @cli_commands.command("review")
+@click.argument("regular_expression", required=True, default=".*", type=str)
 @click.pass_context
-def review_cards(context):
+def review_cards(context, regular_expression):
     """Review all cards."""
-    cards = crud.get_cards(context)
+    cards = crud.get_cards(context, regular_expression)
     for card in cards:
         card.review(context)
         rich.print()
@@ -72,22 +74,30 @@ def add_card(context, **kwargs):
 
 
 @cli_commands.command("remove")
+@click.argument("regular_expression", required=True, type=str)
 @click.pass_context
-@click.option("--id", type=int, prompt="id")
-def remove_card(context, id: int):
-    """Remove card."""
-    res = crud.remove_card(context, id)
-    pprint(res)
+def remove_cards(context, regular_expression):
+    """Remove cards."""
+    cards = crud.get_cards(context, regular_expression)
+    if len(cards) == 0:
+        rich.print("No cards matching regular expression found.")
+        raise click.Abort
+    utils.show_cards_list_table(context, cards)
+    if not click.confirm("Remove?", default=True):
+        raise click.Abort
+    for card in track(cards, f"Removing {len(cards)} cards..."):
+        crud.remove_card(context, card)
+    rich.print("[green]Done![/green]")
 
 
 @cli_commands.command("edit")
 @click.pass_context
-@click.option("--id", type=int, prompt="id")
+@click.option("--card-id", type=int, prompt="id")
 @click.option("--question", type=str, prompt="Question")
 @click.option("--answer", type=str, prompt="Answer")
-def edit_card(context, id, question, answer):
+def edit_card(context, card_id, question, answer):
     """Edit card."""
-    card = crud.get_card_by_id(context, id)
+    card = crud.get_card_by_id(context, card_id)
     if not card:
         return
     card.question = question
