@@ -11,7 +11,7 @@ import rich
 
 from rich.progress import track
 
-from omoidasu import backend
+from omoidasu import crud, utils, models
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ INFO_TEXT = """CLI for Omoidasu.
 @click.pass_context
 def cli_commands(context: click.Context, **kwargs):
     """CLI commands"""
-    context.obj = backend.AppConfig(**kwargs)
+    context.obj = models.AppConfig(**kwargs)
     if kwargs['debug']:
         click.echo(f"debug: {context.obj.debug}")
         logger.setLevel(level=logging.DEBUG)
@@ -42,15 +42,15 @@ def cli_commands(context: click.Context, **kwargs):
 @click.pass_context
 def list_cards(context):
     """List all cards."""
-    cards = backend.get_cards(context)
-    backend.show_cards_list_table(context, cards)
+    cards = crud.get_cards(context)
+    utils.show_cards_list_table(context, cards)
 
 
 @cli_commands.command("review")
 @click.pass_context
 def review_cards(context):
     """Review all cards."""
-    cards = backend.get_cards(context)
+    cards = crud.get_cards(context)
     for card in cards:
         card.review(context)
         rich.print()
@@ -67,7 +67,7 @@ def review_cards(context):
 @click.pass_context
 def add_card(context, **kwargs):
     """Add new card."""
-    card = backend.add_card(context, **kwargs)
+    card = crud.add_card(context, **kwargs)
     card.show(context)
 
 
@@ -76,7 +76,7 @@ def add_card(context, **kwargs):
 @click.option("--id", type=int, prompt="id")
 def remove_card(context, id: int):
     """Remove card."""
-    res = backend.remove_card(context, id)
+    res = crud.remove_card(context, id)
     pprint(res)
 
 
@@ -87,7 +87,12 @@ def remove_card(context, id: int):
 @click.option("--answer", type=str, prompt="Answer")
 def edit_card(context, id, question, answer):
     """Edit card."""
-    card = backend.update_card(context, id, question, answer)
+    card = crud.get_card_by_id(context, id)
+    if not card:
+        return
+    card.question = question
+    card.answer = answer
+    card = crud.update_card(context, card)
     card.show(context)
 
 
