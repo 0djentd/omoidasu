@@ -10,6 +10,7 @@ import click
 import rich
 
 from rich.progress import track
+from rich.prompt import Prompt
 
 from omoidasu import crud, utils, models, auth
 
@@ -49,10 +50,13 @@ def list_cards(context, regular_expression):
 
 @cli_commands.command("review")
 @click.argument("regular_expression", required=True, default=".*", type=str)
+@click.option("--max-cards", required=False, default=100, type=int)
 @click.pass_context
-def review_cards(context, regular_expression):
+def review_cards(context, regular_expression, max_cards):
     """Review all cards."""
     cards = crud.get_cards(context, regular_expression)
+    if len(cards) > max_cards:
+        cards = cards[:max_cards]
     for card in cards:
         card.review(context)
         rich.print()
@@ -64,13 +68,19 @@ def review_cards(context, regular_expression):
 
 
 @cli_commands.command("add")
-@click.option("--question", type=str, prompt="Question")
-@click.option("--answer", type=str, prompt="Answer")
 @click.pass_context
-def add_card(context, **kwargs):
+def add_card(context):
     """Add new card."""
-    card = crud.add_card(context, **kwargs)
-    card.show(context)
+    adding = True
+    cards: list[models.Card] = []
+    while adding:
+        question = Prompt.ask("[yellow]Q[/yellow]")
+        answer = Prompt.ask("[yellow]A[/yellow]")
+        card = crud.add_card(context, question=question, answer=answer)
+        cards.append(card)
+        adding = click.confirm("Add another card?", default=True)
+    rich.print("[green]Done![/green]")
+    utils.show_cards_list_table(context, cards)
 
 
 @cli_commands.command("remove")
