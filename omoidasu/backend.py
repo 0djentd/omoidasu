@@ -3,6 +3,8 @@
 import logging
 import dataclasses
 import json
+import time
+import datetime
 
 from pprint import pprint
 
@@ -10,6 +12,11 @@ import requests
 import appdirs
 import click
 import colorama
+import rich
+
+from rich.table import Table
+from rich.prompt import Prompt
+from rich.progress import track
 
 from omoidasu import config
 
@@ -22,19 +29,73 @@ user_config_dir = appdirs.user_config_dir(appname=config.APP_NAME,
 
 
 @dataclasses.dataclass
+class AppConfig():
+    """App config object."""
+    debug: bool
+    verbose: bool
+    api: str
+    slow: bool
+
+
+@dataclasses.dataclass
 class Card():
     """Card model."""
     id: int
     question: str
     answer: str
+    ok: int
+    fail: int
+    user_id: int
 
-    def show(self, context) -> None:
+    def show(self, context) -> None:  # pylint: disable=unused-argument
         """Show card."""
-        if context.obj.debug:
-            logger.debug("card: %s", self)
-        click.echo(colorama.Style.DIM + f"Card #{self.id}")
-        click.echo(colorama.Style.NORMAL + f"question: {self.question}")
-        click.echo(f"answer: {self.answer}")
+        rich.inspect(self, title=f"Card #{self.id}", docs=False, value=False)
+
+    def review(self, context) -> None:  # pylint: disable=unused-argument
+        """Review card."""
+        rich.print(f"[grey]Card[/grey] #{self.id}")
+        rich.print(f"[yellow]Q[/yellow]: {self.question}")
+        time.sleep(1)
+        rich.print(f"[yellow]A[/yellow]: {self.answer}")
+        answer = Prompt.ask("[[green]Y[/green]/[red]n[/red]]").lower()
+        yes = ["", "yes", "y", "true", "t"]
+        if answer in yes:
+            rich.print("[green]Correct![/green]")
+            self.ok += 1
+        else:
+            rich.print("[red]Wrong![/red]")
+            self.fail += 1
+
+    def sync(self, context) -> None:
+        """Sync card to server."""
+        time.sleep(0.5)
+
+
+def show_cards_list_grid(context, cards: list[Card], col: int = 3) -> None:
+    """Show cards list as grid"""
+    table = Table.grid()
+    for _ in range(col):
+        table.add_column()
+    for i in range(len(cards))[::col]:
+        table.add_row(*[str(card.id) for card in cards[i:i+col]])
+    rich.print(table)
+
+
+def show_cards_list_table(context, cards: list[Card], **kwargs):
+    """Show cards list as table"""
+    if "title" not in kwargs:
+        kwargs['title'] = f"Cards ({len(cards)})"
+    table = Table(**kwargs)
+    names = [field.name for field in dataclasses.fields(Card)]
+    for name in names:
+        table.add_column(header=name)
+    progressbar_text = f"Generating table for {len(cards)} cards..."
+    for card in track(cards, progressbar_text):
+        elements = [str(getattr(card, name)) for name in names]
+        table.add_row(*elements)
+        if context.obj.slow:
+            time.sleep(0.05)
+    rich.print(table)
 
 
 def get_cards(context, tags=None) -> list[Card]:
@@ -63,11 +124,12 @@ def remove_card(context, id):
     return res.json
 
 
-def update_card(context, id: int, question: str, answer: str) -> Card:
-    """Add new card."""
+def update_card(context, card: Card) -> Card:
+    """Update card."""
     api = context.obj.api
-    new_card = {"question": question, "answer": answer}
+    new_card = {"question": card.question, "answer": card.answer,
+                "ok": card.ok, "fail": card.fail, }
     data = json.dumps(new_card)
-    res = requests.patch(f"{api}cards/{id}/", data=data)
+    res = requests.patch(f"{api}cards/{card.id}/", data=data)
     card = Card(**res.json())
     return card
