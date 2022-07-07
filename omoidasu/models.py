@@ -20,21 +20,16 @@ class AppConfig(BaseModel):
     session: Any | None = None
 
 
-class CardAdd(BaseModel):
-    """Card add model."""
+class CardBase(BaseModel):
     question: str
     answer: str
     ok: int = 0
     fail: int = 0
 
 
-class Card(BaseModel):
+class Card(CardBase):
     """Card model."""
     id: int
-    question: str
-    answer: str
-    ok: int
-    fail: int
     user_id: int
 
     def show(self, context) -> None:  # pylint: disable=unused-argument

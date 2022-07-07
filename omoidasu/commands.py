@@ -3,8 +3,7 @@
 
 import time
 import logging
-
-from pprint import pprint
+import asyncio
 
 import click
 import rich
@@ -21,9 +20,9 @@ logger = logging.getLogger(__name__)
 def _add_session(func):
     async def add_session_wrapper(context, *args, **kwargs):
         config = context.obj
-        config.session = aiohttp.ClientSession(config.api)
-        result = await func(context, *args, **kwargs)
-        await config.session.close()
+        async with aiohttp.ClientSession(config.api) as session:
+            config.session = session
+            result = await func(context, *args, **kwargs)
         return result
     return add_session_wrapper
 
@@ -38,16 +37,18 @@ async def list_cards(context, regular_expression):
 @_add_session
 async def review_cards(context, regular_expression, max_cards):
     """Review all cards."""
-    cards = crud.get_cards(context, regular_expression)
+    cards = await crud.get_cards(context, regular_expression)
+    if not cards:
+        raise ValueError
     if len(cards) > max_cards:
         cards = cards[:max_cards]
     for card in cards:
         card.review(context)
         rich.print()
+    tasks = []
     for card in track(cards, description=f"Sync {len(cards)} cards..."):
-        crud.update_card(context, card)
-        if context.obj.slow:
-            time.sleep(0.5)
+        tasks.append(asyncio.create_task(crud.update_card(context, card)))
+    await asyncio.gather(*tasks)
     rich.print("[green]Done![/green]")
 
 
@@ -55,21 +56,30 @@ async def review_cards(context, regular_expression, max_cards):
 async def add_card(context):
     """Add new card."""
     adding = True
-    cards: list[models.Card] = []
+    cards: list[models.CardBase] = []
     while adding:
         question = Prompt.ask("[yellow]Q[/yellow]")
         answer = Prompt.ask("[yellow]A[/yellow]")
-        card = crud.add_card(context, question=question, answer=answer)
-        cards.append(card)
+        cards.append(models.CardBase(question=question, answer=answer))
         adding = click.confirm("Add another card?", default=True)
+
+    tasks = []
+    for card in cards:
+        task = asyncio.create_task(crud.add_card(
+                context, card))
+        tasks.append(task)
+    tasks_result = await asyncio.gather(*tasks)
+    created_cards: list[models.Card] = [x for x in tasks_result if x]
     rich.print("[green]Done![/green]")
-    utils.show_cards_list_table(context, cards)
+    utils.show_cards_list_table(context, created_cards)
 
 
 @_add_session
 async def remove_cards(context, regular_expression):
     """Remove cards."""
-    cards = crud.get_cards(context, regular_expression)
+    cards = await crud.get_cards(context, regular_expression)
+    if cards is None:
+        raise TypeError
     if len(cards) == 0:
         rich.print("No cards matching regular expression found.")
         raise click.Abort
@@ -77,19 +87,21 @@ async def remove_cards(context, regular_expression):
     if not click.confirm("Remove?", default=True):
         raise click.Abort
     for card in track(cards, f"Removing {len(cards)} cards..."):
-        crud.remove_card(context, card)
+        await crud.remove_card(context, card)
     rich.print("[green]Done![/green]")
 
 
 @_add_session
 async def edit_card(context, card_id, question, answer):
     """Edit card."""
-    card = crud.get_card_by_id(context, card_id)
-    if not card:
-        return
+    card = await crud.get_card_by_id(context, card_id)
+    if card is None:
+        raise TypeError
     card.question = question
     card.answer = answer
-    card = crud.update_card(context, card)
+    card = await crud.update_card(context, card)
+    if card is None:
+        raise TypeError
     card.show(context)
 
 

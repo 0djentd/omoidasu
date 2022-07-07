@@ -2,23 +2,24 @@
 
 
 import logging
+from pprint import pprint
 import re
 import asyncio
 
 import requests
+import rich
 
-from omoidasu.models import Card, CardAdd
+from omoidasu.models import Card, CardBase
 
 logger = logging.getLogger(__name__)
 
 
 async def get_cards(context, regular_expression) -> list[Card] | None:
     """Get cards filtered by tags."""
-    async with context.obj.session as session:
-        async with session.get("/api/cards/") as res:
-            if res.status != 200:
-                return None
-            data = await res.json()
+    async with context.obj.session.get("/api/cards/") as res:
+        if res.status != 200:
+            return None
+        data = await res.json()
     cards = [Card(**card) for card in data]
     result: list[Card] = []
 
@@ -37,34 +38,46 @@ async def get_cards(context, regular_expression) -> list[Card] | None:
     return result
 
 
-def get_card_by_id(context, card_id: int) -> Card | None:
+async def get_card_by_id(context, card_id: int) -> Card | None:
     """Get cards filtered by tags."""
-    res = requests.get("/api/cards/{card_id}/")
-    if res.status_code == 200:
-        return Card(**res.json())
-    return None
+    async with context.obj.session.get(
+            f"/api/cards/{card_id}") as res:
+        if res.status != 200:
+            return None
+        data = await res.json()
+        return Card(**data)
 
 
-def add_card(context, **kwargs) -> Card | None:
+async def add_card(context, card: CardBase) -> Card | None:
     """Add new card."""
-    new_card = CardAdd(**kwargs)
-    res = requests.post("/api/cards/", data=new_card.json())
-    if res.status_code == 200:
-        return Card(**res.json())
-    return None
+    json_data = {"json": card.dict()}
+    async with context.obj.session.post(
+            "/api/cards/", **json_data) as res:
+        if res.status != 200:
+            return None
+        data = await res.json()
+        return Card(**data)
 
 
-def remove_card(context, card: Card) -> bool:
+async def remove_card(context, card: Card) -> bool:
     """Remove card."""
-    res = requests.delete("/api/cards/{card.id}/")
-    if res.status_code == 200:
+    async with context.obj.session.delete(
+            f"/api/cards/{card.id}/") as res:
+        if res.status != 200:
+            return False
         return True
-    return False
 
 
-def update_card(context, card: Card) -> Card | None:
+async def update_card(context, card: Card) -> Card | None:
     """Update card."""
-    res = requests.patch("/api/cards/{card.id}/", data=card.json())
-    if res.status_code == 200:
-        return Card(**res.json())
-    return None
+    card_add = CardBase(question=card.question,
+                          answer=card.answer,
+                          ok=card.ok,
+                          fail=card.fail
+                          ).dict()
+    async with context.obj.session.patch(
+            f"/api/cards/{card.id}/", json=card_add) as res:
+        if res.status != 200:
+            return None
+        data = await res.json()
+        return Card(**data)
