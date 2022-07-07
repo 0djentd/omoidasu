@@ -4,7 +4,6 @@
 import logging
 import asyncio
 
-from pprint import pprint
 from types import FunctionType
 from typing import Any
 
@@ -42,7 +41,6 @@ def cli_commands(context, **kwargs):
         click.echo(f"debug: {context.obj.debug}")
         logger.setLevel(level=logging.DEBUG)
         logging.basicConfig(level=logging.DEBUG)
-        pprint(context.obj)
 
 
 @cli_commands.command("list")

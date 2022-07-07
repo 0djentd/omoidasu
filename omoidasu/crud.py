@@ -2,11 +2,9 @@
 
 
 import logging
-from pprint import pprint
 import re
 import asyncio
 
-import requests
 import rich
 
 from omoidasu.models import Card, CardBase
