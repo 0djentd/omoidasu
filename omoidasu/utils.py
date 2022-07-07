@@ -1,3 +1,6 @@
+"""UI utils."""
+
+
 import logging
 import time
 

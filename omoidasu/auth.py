@@ -1,3 +1,6 @@
+"""Authentication functions and utils."""
+
+
 import appdirs
 
 from .models import User

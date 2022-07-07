@@ -1,6 +1,8 @@
+"""Async functions for CLI"""
+
+
 import time
 import logging
-import asyncio
 
 from pprint import pprint
 

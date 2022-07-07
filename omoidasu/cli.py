@@ -1,7 +1,6 @@
 """CLI module."""
 
 
-import time
 import logging
 import asyncio
 

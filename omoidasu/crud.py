@@ -1,6 +1,9 @@
+"""CRUD functions."""
+
+
 import logging
-import json
 import re
+import asyncio
 
 import requests
 
@@ -18,9 +21,19 @@ async def get_cards(context, regular_expression) -> list[Card] | None:
             data = await res.json()
     cards = [Card(**card) for card in data]
     result: list[Card] = []
+
+    async def check(card: Card, regular_expression) -> Card | None:
+        text = card.json()
+        if re.findall(regular_expression, text):
+            return card
+        return None
+
+    checks = []
     for card in cards:
-        if re.findall(regular_expression, card.json()):
-            result.append(card)
+        task = asyncio.create_task(check(card, regular_expression))
+        checks.append(task)
+    checks_result = await asyncio.gather(*checks)
+    result = [card for card in checks_result if isinstance(card, Card)]
     return result
 
 
