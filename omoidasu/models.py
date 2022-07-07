@@ -1,6 +1,8 @@
 import logging
 import time
 
+from typing import Any
+
 import rich
 
 from rich.prompt import Prompt
@@ -15,6 +17,7 @@ class AppConfig(BaseModel):
     verbose: bool
     api: str
     slow: bool
+    session: Any | None = None
 
 
 class CardAdd(BaseModel):

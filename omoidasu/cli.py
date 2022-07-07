@@ -3,8 +3,11 @@
 
 import time
 import logging
+import asyncio
 
 from pprint import pprint
+from types import FunctionType
+from typing import Any
 
 import click
 import rich
@@ -12,12 +15,16 @@ import rich
 from rich.progress import track
 from rich.prompt import Prompt
 
-from omoidasu import crud, utils, models, auth
+from omoidasu import models, commands
 
 logger = logging.getLogger(__name__)
 
-INFO_TEXT = """CLI for Omoidasu.
-"""
+
+INFO_TEXT = """CLI for Omoidasu."""
+
+
+def _run_async_command(func: Any, *args, **kwargs) -> Any:
+    return asyncio.run(func(*args, **kwargs))
 
 
 @click.group(help=INFO_TEXT)
@@ -25,11 +32,11 @@ INFO_TEXT = """CLI for Omoidasu.
               help="Show additional information")
 @click.option("-d", "--debug/--no-debug",
               help="Show debug information")
-@click.option("--api", type=str, default="http://localhost:8000/api/",
+@click.option("--api", type=str, default="http://localhost:8000",
               help="API url.")
 @click.option("--slow/--no-slow", default=False)
 @click.pass_context
-def cli_commands(context: click.Context, **kwargs):
+def cli_commands(context, **kwargs):
     """CLI commands"""
     context.obj = models.AppConfig(**kwargs)
     if kwargs['debug']:
@@ -42,62 +49,33 @@ def cli_commands(context: click.Context, **kwargs):
 @cli_commands.command("list")
 @click.argument("regular_expression", required=True, default=".*", type=str)
 @click.pass_context
-def list_cards(context, regular_expression):
+def list_cards(*args, **kwargs):
     """List all cards."""
-    cards = crud.get_cards(context, regular_expression)
-    utils.show_cards_list_table(context, cards)
+    return _run_async_command(commands.list_cards, *args, **kwargs)
 
 
 @cli_commands.command("review")
 @click.argument("regular_expression", required=True, default=".*", type=str)
 @click.option("--max-cards", required=False, default=100, type=int)
 @click.pass_context
-def review_cards(context, regular_expression, max_cards):
+def review_cards(*args, **kwargs):
     """Review all cards."""
-    cards = crud.get_cards(context, regular_expression)
-    if len(cards) > max_cards:
-        cards = cards[:max_cards]
-    for card in cards:
-        card.review(context)
-        rich.print()
-    for card in track(cards, description=f"Sync {len(cards)} cards..."):
-        crud.update_card(context, card)
-        if context.obj.slow:
-            time.sleep(0.5)
-    rich.print("[green]Done![/green]")
+    return _run_async_command(commands.review_cards, *args, **kwargs)
 
 
 @cli_commands.command("add")
 @click.pass_context
-def add_card(context):
+def add_card(*args, **kwargs):
     """Add new card."""
-    adding = True
-    cards: list[models.Card] = []
-    while adding:
-        question = Prompt.ask("[yellow]Q[/yellow]")
-        answer = Prompt.ask("[yellow]A[/yellow]")
-        card = crud.add_card(context, question=question, answer=answer)
-        cards.append(card)
-        adding = click.confirm("Add another card?", default=True)
-    rich.print("[green]Done![/green]")
-    utils.show_cards_list_table(context, cards)
+    return _run_async_command(commands.add_card, *args, **kwargs)
 
 
 @cli_commands.command("remove")
 @click.argument("regular_expression", required=True, type=str)
 @click.pass_context
-def remove_cards(context, regular_expression):
+def remove_cards(*args, **kwargs):
     """Remove cards."""
-    cards = crud.get_cards(context, regular_expression)
-    if len(cards) == 0:
-        rich.print("No cards matching regular expression found.")
-        raise click.Abort
-    utils.show_cards_list_table(context, cards)
-    if not click.confirm("Remove?", default=True):
-        raise click.Abort
-    for card in track(cards, f"Removing {len(cards)} cards..."):
-        crud.remove_card(context, card)
-    rich.print("[green]Done![/green]")
+    return _run_async_command(commands.remove_cards, *args, **kwargs)
 
 
 @cli_commands.command("edit")
@@ -105,15 +83,9 @@ def remove_cards(context, regular_expression):
 @click.argument("card_id", type=int, required=True)
 @click.option("--question", type=str, prompt="Question")
 @click.option("--answer", type=str, prompt="Answer")
-def edit_card(context, card_id, question, answer):
+def edit_card(*args, **kwargs):
     """Edit card."""
-    card = crud.get_card_by_id(context, card_id)
-    if not card:
-        return
-    card.question = question
-    card.answer = answer
-    card = crud.update_card(context, card)
-    card.show(context)
+    return _run_async_command(commands.edit_card, *args, **kwargs)
 
 
 @cli_commands.group("auth")
@@ -124,41 +96,25 @@ def auth_commands(context):  # pylint: disable=unused-argument
 
 @auth_commands.command()
 @click.pass_context
-def status(context):
+def status(*args, **kwargs):
     """Show authentication status."""
-    if context.obj.slow:
-        time.sleep(3)
-    user = auth.get_user(context)
-    if user:
-        rich.print(user)
-    else:
-        rich.print('[red]Use "omoidasu auth login" to login.[/red]')
+    return _run_async_command(commands.status, *args, **kwargs)
 
 
 @auth_commands.command()
 @click.pass_context
 @click.option("--username", prompt="Username")
 @click.password_option("--password", prompt="Password")
-def login(context, username, password):
+def login(*args, **kwargs):
     """Login."""
-    if context.obj.slow:
-        time.sleep(3)
-    user = auth.login(context, username, password)
-    if not user:
-        rich.print("[red]Failed to login.[/red]")
-        raise click.Abort
-    rich.print(f"[green]Logged in as {user.username}.[/green]")
+    return _run_async_command(commands.login, *args, **kwargs)
 
 
 @auth_commands.command()
 @click.pass_context
-def logout(context):
+def logout(*args, **kwargs):
     """Logout."""
-    if context.obj.slow:
-        time.sleep(3)
-    if not auth.logout(context):
-        rich.print("[red]Failed to logout.[/red]")
-        raise click.Abort
+    return _run_async_command(commands.logout, *args, **kwargs)
 
 
 def main():
