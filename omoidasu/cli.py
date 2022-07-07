@@ -3,11 +3,13 @@
 
 import time
 import logging
+import asyncio
 
 from pprint import pprint
 
 import click
 import rich
+import aiohttp
 
 from rich.progress import track
 from rich.prompt import Prompt
@@ -25,18 +27,19 @@ INFO_TEXT = """CLI for Omoidasu.
               help="Show additional information")
 @click.option("-d", "--debug/--no-debug",
               help="Show debug information")
-@click.option("--api", type=str, default="http://localhost:8000/api/",
+@click.option("--api", type=str, default="http://localhost:8000",
               help="API url.")
 @click.option("--slow/--no-slow", default=False)
 @click.pass_context
 def cli_commands(context: click.Context, **kwargs):
     """CLI commands"""
-    context.obj = models.AppConfig(**kwargs)
+    session = aiohttp.ClientSession(kwargs["api"])
+    context.obj = models.AppConfig(**kwargs, session=session)
     if kwargs['debug']:
         click.echo(f"debug: {context.obj.debug}")
         logger.setLevel(level=logging.DEBUG)
         logging.basicConfig(level=logging.DEBUG)
-        pprint(context.obj)
+        rich.inspect(context.obj)
 
 
 @cli_commands.command("list")

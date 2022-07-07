@@ -1,5 +1,6 @@
 import logging
 import time
+import typing
 
 import rich
 
@@ -15,6 +16,7 @@ class AppConfig(BaseModel):
     verbose: bool
     api: str
     slow: bool
+    session: typing.Any
 
 
 class CardAdd(BaseModel):
