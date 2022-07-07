@@ -1,21 +1,26 @@
 import logging
 import json
 import re
+import asyncio
 
 import requests
+import aiohttp
 
 from omoidasu.models import Card, CardAdd
 
 logger = logging.getLogger(__name__)
 
 
-def get_cards(context, regular_expression) -> list[Card] | None:
+async def get_cards(context, regular_expression) -> list[Card] | None:
     """Get cards filtered by tags."""
-    api = context.obj.api
-    res = requests.get(f"{api}cards/")
-    if res.status_code != 200:
-        return None
-    cards = [Card(**card) for card in res.json()]
+    context.obj.session = aiohttp.ClientSession(context.obj.api)
+    response_data = None
+    async with context.obj.session as session:
+        async with session.get("/api/cards/") as res:
+            if res.status != 200:
+                return None
+            response_data = await res.json()
+    cards = [Card(**card) for card in response_data]
     result: list[Card] = []
     for card in cards:
         if re.findall(regular_expression, card.json()):
@@ -42,13 +47,23 @@ def add_card(context, **kwargs) -> Card | None:
     return None
 
 
-def remove_card(context, card: Card) -> bool:
+async def remove_cards(context, cards: list[Card]):
+    context.obj.session = aiohttp.ClientSession(context.obj.api)
+    tasks = []
+    for card in cards:
+        task = asyncio.create_task(remove_card(context, card))
+        tasks.append(task)
+    result = asyncio.gather(*tasks)
+    await result
+
+
+async def remove_card(context, card: Card) -> bool:
     """Remove card."""
-    api = context.obj.api
-    res = requests.delete(f"{api}cards/{card.id}/")
-    if res.status_code == 200:
-        return True
-    return False
+    async with context.obj.session as session:
+        async with session.delete(f"/api/cards/{card.id}/") as res:
+            if res.status == 200:
+                return True
+            return False
 
 
 def update_card(context, card: Card) -> Card | None:

@@ -33,8 +33,7 @@ INFO_TEXT = """CLI for Omoidasu.
 @click.pass_context
 def cli_commands(context: click.Context, **kwargs):
     """CLI commands"""
-    session = aiohttp.ClientSession(kwargs["api"])
-    context.obj = models.AppConfig(**kwargs, session=session)
+    context.obj = models.AppConfig(**kwargs)
     if kwargs['debug']:
         click.echo(f"debug: {context.obj.debug}")
         logger.setLevel(level=logging.DEBUG)
@@ -47,7 +46,7 @@ def cli_commands(context: click.Context, **kwargs):
 @click.pass_context
 def list_cards(context, regular_expression):
     """List all cards."""
-    cards = crud.get_cards(context, regular_expression)
+    cards = asyncio.run(crud.get_cards(context, regular_expression))
     utils.show_cards_list_table(context, cards)
 
 
@@ -91,15 +90,17 @@ def add_card(context):
 @click.pass_context
 def remove_cards(context, regular_expression):
     """Remove cards."""
-    cards = crud.get_cards(context, regular_expression)
+    cards = asyncio.run(crud.get_cards(context, regular_expression))
+    if not cards:
+        rich.print("Error")
+        raise click.Abort
     if len(cards) == 0:
         rich.print("No cards matching regular expression found.")
         raise click.Abort
     utils.show_cards_list_table(context, cards)
     if not click.confirm("Remove?", default=True):
         raise click.Abort
-    for card in track(cards, f"Removing {len(cards)} cards..."):
-        crud.remove_card(context, card)
+    asyncio.run(crud.remove_cards(context, cards))
     rich.print("[green]Done![/green]")
 
 
