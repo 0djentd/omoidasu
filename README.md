@@ -1,1 +1,3 @@
 # omoidasu
+
+CLI for Omoidasu.
