@@ -8,6 +8,7 @@ import asyncio
 import click
 import rich
 import aiohttp
+from aiohttp.client_exceptions import ClientConnectionError
 
 from rich.progress import track
 from rich.prompt import Prompt
@@ -22,7 +23,11 @@ def _add_session(func):
         config = context.obj
         async with aiohttp.ClientSession(config.api) as session:
             config.session = session
-            result = await func(context, *args, **kwargs)
+            try:
+                result = await func(context, *args, **kwargs)
+            except ClientConnectionError as err:
+                rich.print(err)
+                raise click.Abort
         return result
     return add_session_wrapper
 

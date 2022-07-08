@@ -1,17 +1,11 @@
 """CLI module."""
 
-
 import logging
 import asyncio
 
-from types import FunctionType
 from typing import Any
 
 import click
-import rich
-
-from rich.progress import track
-from rich.prompt import Prompt
 
 from omoidasu import models, commands
 

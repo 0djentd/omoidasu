@@ -37,7 +37,7 @@ async def get_cards(context, regular_expression) -> list[Card] | None:
 
 
 async def get_card_by_id(context, card_id: int) -> Card | None:
-    """Get cards filtered by tags."""
+    """Get card by id."""
     async with context.obj.session.get(
             f"/api/cards/{card_id}") as res:
         if res.status != 200:
@@ -69,10 +69,10 @@ async def remove_card(context, card: Card) -> bool:
 async def update_card(context, card: Card) -> Card | None:
     """Update card."""
     card_add = CardBase(question=card.question,
-                          answer=card.answer,
-                          ok=card.ok,
-                          fail=card.fail
-                          ).dict()
+                        answer=card.answer,
+                        ok=card.ok,
+                        fail=card.fail
+                        ).dict()
     async with context.obj.session.patch(
             f"/api/cards/{card.id}/", json=card_add) as res:
         if res.status != 200:
