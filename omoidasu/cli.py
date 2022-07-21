@@ -1,13 +1,33 @@
 """CLI module."""
 
+import os
 import logging
 import asyncio
 
 from typing import Any
 
+import appdirs
 import click
+import rich
 
-from omoidasu import models, commands
+from omoidasu import commands, config
+
+
+# Default directories
+app_dir_settings = {"appname": "omoidasu"}
+_CONFIG_DIR = appdirs.user_config_dir(**app_dir_settings)
+_DATA_DIR = appdirs.user_data_dir(**app_dir_settings)
+_CACHE_DIR = appdirs.user_cache_dir(**app_dir_settings)
+_STATE_DIR = appdirs.user_state_dir(**app_dir_settings)
+_LOG_DIR = appdirs.user_log_dir(**app_dir_settings)
+
+# Environment variables
+_PREFIX = "OMOIDASU"
+_CONFIG_DIR = os.environ.get(_PREFIX + "_CONFIG_DIR", _CONFIG_DIR)
+_DATA_DIR = os.environ.get(_PREFIX + "_DATA_DIR", _DATA_DIR)
+_CACHE_DIR = os.environ.get(_PREFIX + "_CACHE_DIR", _CACHE_DIR)
+_STATE_DIR = os.environ.get(_PREFIX + "_STATE_DIR", _STATE_DIR)
+_LOG_DIR = os.environ.get(_PREFIX + "_LOG_DIR", _LOG_DIR)
 
 logger = logging.getLogger(__name__)
 
@@ -20,25 +40,31 @@ def _run_async_command(func: Any, *args, **kwargs) -> Any:
 
 
 @click.group(help=INFO_TEXT)
+@click.option("--data-dir",
+              type=str, default=_DATA_DIR)
+@click.option("--config-dir",
+              type=str, default=_CONFIG_DIR)
+@click.option("--cache-dir",
+              type=str, default=_CACHE_DIR)
+@click.option("--state-dir",
+              type=str, default=_STATE_DIR)
+@click.option("--log-dir",
+              type=str, default=_LOG_DIR)
 @click.option("--verbose/--no-verbose",
               help="Show additional information")
-@click.option("-d", "--debug/--no-debug",
-              help="Show debug information")
-@click.option("--api", type=str, default="http://localhost:8000",
-              help="API url.")
-@click.option("--slow/--no-slow", default=False)
+@click.option("--script/--no-script",
+              help="Use interactive features.")
 @click.pass_context
 def cli_commands(context, **kwargs):
     """CLI commands"""
-    context.obj = models.AppConfig(**kwargs)
+    context.obj = config.AppConfig(**kwargs)
     if kwargs['debug']:
-        click.echo(f"debug: {context.obj.debug}")
         logger.setLevel(level=logging.DEBUG)
         logging.basicConfig(level=logging.DEBUG)
+        rich.inspect(context.obj)
 
 
 @cli_commands.command("list")
-@click.argument("regular_expression", required=True, default=".*", type=str)
 @click.pass_context
 def list_cards(*args, **kwargs):
     """List all cards."""
@@ -46,8 +72,6 @@ def list_cards(*args, **kwargs):
 
 
 @cli_commands.command("review")
-@click.argument("regular_expression", required=True, default=".*", type=str)
-@click.option("--max-cards", required=False, default=100, type=int)
 @click.pass_context
 def review_cards(*args, **kwargs):
     """Review all cards."""
@@ -77,35 +101,6 @@ def remove_cards(*args, **kwargs):
 def edit_card(*args, **kwargs):
     """Edit card."""
     return _run_async_command(commands.edit_card, *args, **kwargs)
-
-
-@cli_commands.group("auth")
-@click.pass_context
-def auth_commands(context):  # pylint: disable=unused-argument
-    """Authentication."""
-
-
-@auth_commands.command()
-@click.pass_context
-def status(*args, **kwargs):
-    """Show authentication status."""
-    return _run_async_command(commands.status, *args, **kwargs)
-
-
-@auth_commands.command()
-@click.pass_context
-@click.option("--username", prompt="Username")
-@click.password_option("--password", prompt="Password")
-def login(*args, **kwargs):
-    """Login."""
-    return _run_async_command(commands.login, *args, **kwargs)
-
-
-@auth_commands.command()
-@click.pass_context
-def logout(*args, **kwargs):
-    """Logout."""
-    return _run_async_command(commands.logout, *args, **kwargs)
 
 
 def main():
