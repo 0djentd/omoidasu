@@ -72,6 +72,8 @@ def cli_commands(context, **kwargs):
 
 @cli_commands.command("list")
 @click.argument("regular_expression", default=".*", required=True, type=str)
+@click.option("--max-cards", default=1000, type=int,
+              help="Max number of cards to list.")
 @click.pass_context
 def list_cards(*args, **kwargs):
     """Writes all cards to stdout
@@ -89,6 +91,8 @@ def list_cards(*args, **kwargs):
 
 @cli_commands.command("review")
 @click.argument("regular_expression", default=".*", required=True, type=str)
+@click.option("--max-cards", default=1000, type=int,
+              help="Max number of cards to review.")
 @click.pass_context
 def review_cards(*args, **kwargs):
     """Review all cards."""
