@@ -20,6 +20,7 @@ _DATA_DIR = appdirs.user_data_dir(**app_dir_settings)
 _CACHE_DIR = appdirs.user_cache_dir(**app_dir_settings)
 _STATE_DIR = appdirs.user_state_dir(**app_dir_settings)
 _LOG_DIR = appdirs.user_log_dir(**app_dir_settings)
+_FLASHCARDS_DIR = os.path.join(_STATE_DIR, "default_flashcards_dir")
 
 # Environment variables
 _PREFIX = "OMOIDASU"
@@ -28,6 +29,7 @@ _DATA_DIR = os.environ.get(_PREFIX + "_DATA_DIR", _DATA_DIR)
 _CACHE_DIR = os.environ.get(_PREFIX + "_CACHE_DIR", _CACHE_DIR)
 _STATE_DIR = os.environ.get(_PREFIX + "_STATE_DIR", _STATE_DIR)
 _LOG_DIR = os.environ.get(_PREFIX + "_LOG_DIR", _LOG_DIR)
+_FLASHCARDS_DIR = os.environ.get(_PREFIX + "_FLASHCARDS_DIR", _FLASHCARDS_DIR)
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +57,8 @@ def _run_async_command(func: Any, *args, **kwargs) -> Any:
               type=str, default=_STATE_DIR)
 @click.option("--log-dir",
               type=str, default=_LOG_DIR)
+@click.option("--flashcards-dir",
+              type=str, default=_FLASHCARDS_DIR)
 @click.option("--verbose/--no-verbose",
               help="Show additional information")
 @click.option("--script/--no-script",
