@@ -36,6 +36,11 @@ INFO_TEXT = """CLI for Omoidasu."""
 
 
 def _run_async_command(func: Any, *args, **kwargs) -> Any:
+    context = args[0]
+    if context.obj.debug:
+        rich.inspect(context.obj, title="Context")
+        rich.inspect(args, title="Args")
+        rich.inspect(kwargs, title="Kwargs")
     return asyncio.run(func(*args, **kwargs))
 
 
@@ -54,6 +59,7 @@ def _run_async_command(func: Any, *args, **kwargs) -> Any:
               help="Show additional information")
 @click.option("--script/--no-script",
               help="Use interactive features.")
+@click.option("--debug/--no-debug")
 @click.pass_context
 def cli_commands(context, **kwargs):
     """CLI commands"""
@@ -65,42 +71,28 @@ def cli_commands(context, **kwargs):
 
 
 @cli_commands.command("list")
+@click.argument("regular_expression", default=".*", required=True, type=str)
 @click.pass_context
 def list_cards(*args, **kwargs):
-    """List all cards."""
+    """Writes all cards to stdout
+    in following format:
+
+    card_1_side_1
+    card_1_side_2
+
+    card_2_side_1
+    card_2_side_2
+    card_2_side_3
+    """
     return _run_async_command(commands.list_cards, *args, **kwargs)
 
 
 @cli_commands.command("review")
+@click.argument("regular_expression", default=".*", required=True, type=str)
 @click.pass_context
 def review_cards(*args, **kwargs):
     """Review all cards."""
     return _run_async_command(commands.review_cards, *args, **kwargs)
-
-
-@cli_commands.command("add")
-@click.pass_context
-def add_card(*args, **kwargs):
-    """Add new card."""
-    return _run_async_command(commands.add_card, *args, **kwargs)
-
-
-@cli_commands.command("remove")
-@click.argument("regular_expression", required=True, type=str)
-@click.pass_context
-def remove_cards(*args, **kwargs):
-    """Remove cards."""
-    return _run_async_command(commands.remove_cards, *args, **kwargs)
-
-
-@cli_commands.command("edit")
-@click.pass_context
-@click.argument("card_id", type=int, required=True)
-@click.option("--question", type=str, prompt="Question")
-@click.option("--answer", type=str, prompt="Answer")
-def edit_card(*args, **kwargs):
-    """Edit card."""
-    return _run_async_command(commands.edit_card, *args, **kwargs)
 
 
 def main():
