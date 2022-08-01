@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "omoidasu"
-version = "0.4.2"
+version = "0.4.3"
 description = "Omoidasu."
 authors = ["0djentd"]
 readme = "README.md"
@@ -11,7 +11,7 @@ repository = "https://github.com/0djentd/omoidasu"
 omoidasu = "omoidasu.cli:main"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.8"
 appdirs = "^1.4.4"
 rich = "^12.4.4"
 pydantic = "^1.9.1"
