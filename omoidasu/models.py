@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Iterator, Optional
 
 import rich
 from pydantic import BaseModel
@@ -35,14 +35,21 @@ class Card(BaseModel):
         logger.info("Loaded %s from %s", card, filename)
         return card
 
-    def review(self):
-        """Review all combinations."""
-        sides = self.sides
-        for question in sides:
-            for answer in sides:
-                _ = input(question)
-                result = input(answer)
-                if result not in ["", "y", "Y", "\n"]:
-                    rich.print("[red]Wrong.[/red]")
-                else:
-                    rich.print("[green]Correct.[/green]")
+    def get_questions(self) -> Iterator:
+        for side_1 in self.sides:
+            for side_2 in self.sides:
+                yield Question(card=self, question=side_1, answer=side_2)
+
+
+class Question(BaseModel):
+    card: Card
+    question: Side
+    answer: Side
+
+    def ask(self):
+        _ = input(self.question)
+        result = input(self.answer)
+        if result not in ["", "y", "Y", "\n"]:
+            rich.print("[red]Wrong.[/red]")
+        else:
+            rich.print("[green]Correct.[/green]")
