@@ -7,6 +7,7 @@ import logging
 from rich import prompt
 
 from omoidasu.models import Card, Side
+from omoidasu import exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -19,18 +20,18 @@ def load_flashcard(filename) -> Card:
     with open(filename, encoding="utf-8") as file:
         for index, line in enumerate(file.readlines()):
             sides.append(Side(id=index, content=line))
-    return Card(filename=filename, sides=sides)
+    return Card(filename=str(filename), sides=sides)
 
 
 def check_directory(directory: str, interactive: bool):
     if os.path.exists(directory):
         if not os.path.isdir(directory):
-            raise ValueError
+            raise exceptions.FlashcardsDirectoryIsFile(directory)
     else:
         if interactive:
             if not prompt.Confirm(
                     f'Create flashcards directory "{directory}"?'):
-                raise ValueError
+                raise exceptions.FlashcardsDirectoryDoesNotExists(directory)
         os.makedirs(directory)
 
 

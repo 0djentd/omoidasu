@@ -36,6 +36,4 @@ def show_cards_list_table(context, cards: list[Card], **kwargs):
     for card in track(cards, progressbar_text):
         elements = [str(getattr(card, name)) for name in names]
         table.add_row(*elements)
-        if context.obj.slow:
-            time.sleep(0.05)
     rich.print(table)
