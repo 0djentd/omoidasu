@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "omoidasu"
-version = "0.4.1"
+version = "0.4.2"
 description = "Omoidasu."
 authors = ["0djentd"]
+readme = "README.md"
+homepage = "https://github.com/0djentd/omoidasu"
+repository = "https://github.com/0djentd/omoidasu"
 
 [tool.poetry.scripts]
 omoidasu = "omoidasu.cli:main"
