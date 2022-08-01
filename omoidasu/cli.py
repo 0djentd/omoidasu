@@ -48,22 +48,23 @@ def _run_async_command(func: Any, *args, **kwargs) -> Any:
 
 @click.group(help=INFO_TEXT)
 @click.option("--data-dir",
-              type=str, default=_DATA_DIR)
+              type=str, default=_DATA_DIR, help="Data directory.")
 @click.option("--config-dir",
-              type=str, default=_CONFIG_DIR)
+              type=str, default=_CONFIG_DIR, help="Config directory.")
 @click.option("--cache-dir",
-              type=str, default=_CACHE_DIR)
+              type=str, default=_CACHE_DIR, help="Cache directory.")
 @click.option("--state-dir",
-              type=str, default=_STATE_DIR)
+              type=str, default=_STATE_DIR, help="State directory.")
 @click.option("--log-dir",
-              type=str, default=_LOG_DIR)
+              type=str, default=_LOG_DIR, help="Log directory.")
 @click.option("--flashcards-dir",
-              type=str, default=_FLASHCARDS_DIR)
+              type=str, default=_FLASHCARDS_DIR, help="Flashcards directory.")
 @click.option("--verbose/--no-verbose",
-              help="Show additional information")
+              help="Show additional information.")
 @click.option("--interactive/--no-interactive",
               help="Use interactive features.")
-@click.option("--debug/--no-debug")
+@click.option("--debug/--no-debug",
+              help="Show debug information.")
 @click.pass_context
 def cli_commands(context, **kwargs):
     """CLI commands"""
@@ -80,16 +81,7 @@ def cli_commands(context, **kwargs):
               help="Max number of cards to list.")
 @click.pass_context
 def list_cards(*args, **kwargs):
-    """Writes all cards to stdout
-    in following format:
-
-    card_1_side_1
-    card_1_side_2
-
-    card_2_side_1
-    card_2_side_2
-    card_2_side_3
-    """
+    """Writes all cards to stdout."""
     return _run_async_command(commands.list_cards, *args, **kwargs)
 
 
