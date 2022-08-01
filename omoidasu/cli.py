@@ -87,12 +87,22 @@ def review_cards(*args, **kwargs):
     return _run_async_command(commands.review_cards, *args, **kwargs)
 
 
-@cli_commands.command("add")
+@cli_commands.command("new")
 @click.argument("sides", nargs=-1)
 @click.pass_context
 def add_card(*args, **kwargs):
-    """Review all cards."""
+    """Add card."""
     return _run_async_command(commands.add_card, *args, **kwargs)
+
+@cli_commands.command("add")
+@click.option("--editor", type=str)
+@click.pass_context
+def add_cards_interactively(*args, **kwargs):
+    """Add cards interactively using text editor.
+Save empty file to finish adding cards.
+"""
+    return _run_async_command(
+            commands.add_cards_interactively, *args, **kwargs)
 
 
 def main():

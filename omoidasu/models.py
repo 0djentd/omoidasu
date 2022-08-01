@@ -25,6 +25,12 @@ class Card(BaseModel):
     filename: Optional[str]  # Can be None, if not saved to file.
     sides: list[Side]
 
+    def __init__(self, *args, filename: str, sides: list[Side]):
+        length = len(sides)
+        if length < 2:
+            raise NotEnoughCardSidesException(filename, length)
+        super().__init__(filename=filename, sides=sides)
+
     @classmethod
     def load_from_file(cls, filename: str):
         """Loads card from file."""

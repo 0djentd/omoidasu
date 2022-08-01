@@ -20,6 +20,11 @@ def load_flashcard(filename) -> Card:
         raise TypeError
     with open(filename, encoding="utf-8") as file:
         for index, line in enumerate(file.readlines()):
+            line = line.replace("\n", "")
+            if len(line) == 0:
+                continue
+            if line[0] == "#":
+                continue
             sides.append(Side(id=index, content=line))
     if isinstance(filename, os.DirEntry):
         name = filename.name
