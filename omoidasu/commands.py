@@ -1,17 +1,16 @@
 """Async functions for CLI"""
 
 
+import asyncio
 import logging
 import random
-import tempfile
 import subprocess
-import asyncio
-
-from typing import Optional
+import tempfile
+from typing import List, Optional
 
 from rich import inspect
 
-from omoidasu import crud, utils, models
+from omoidasu import crud, models, utils
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ async def review_cards(context, regular_expression, max_cards):
         question.ask()
 
 
-async def add_card(context, sides: list[str]):
+async def add_card(context, sides: List[str]):
     card_content = [models.Side(
         id=i, content=content) for i, content in enumerate(sides)]
     card = models.Card(filename=None, sides=card_content)

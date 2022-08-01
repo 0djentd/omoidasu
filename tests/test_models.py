@@ -1,9 +1,9 @@
-from unittest import TestCase
 from secrets import token_urlsafe
 from typing import Iterable
+from unittest import TestCase
 
-from omoidasu.models import Card, Side, Question
 from omoidasu.exceptions import NotEnoughCardSidesException
+from omoidasu.models import Card, Question, Side
 
 
 def generate_card_sides(count):

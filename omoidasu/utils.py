@@ -1,8 +1,7 @@
 """UI utils."""
-
-
 import logging
 import time
+from typing import List
 
 import rich
 from rich.progress import track
@@ -13,7 +12,7 @@ from omoidasu.models import Card
 logger = logging.getLogger(__name__)
 
 
-def show_cards_list_grid(context, cards: list[Card], col: int = 3) -> None:
+def show_cards_list_grid(context, cards: List[Card], col: int = 3) -> None:
     """Show cards list as grid"""
     table = Table.grid()
     for _ in range(col):
@@ -23,7 +22,7 @@ def show_cards_list_grid(context, cards: list[Card], col: int = 3) -> None:
     rich.print(table)
 
 
-def show_cards_list_table(context, cards: list[Card], **kwargs):
+def show_cards_list_table(context, cards: List[Card], **kwargs):
     """Show cards list as table"""
     if "title" not in kwargs:
         kwargs["title"] = f"{len(cards)} cards."

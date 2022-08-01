@@ -1,5 +1,5 @@
 import logging
-from typing import Iterator, Optional
+from typing import Iterator, List, Optional
 
 import rich
 from pydantic import BaseModel
@@ -23,9 +23,9 @@ class Card(BaseModel):
     """Card model."""
 
     filename: Optional[str]  # Can be None, if not saved to file.
-    sides: list[Side]
+    sides: List[Side]
 
-    def __init__(self, *args, filename: str, sides: list[Side]):
+    def __init__(self, *args, filename: str, sides: List[Side]):
         length = len(sides)
         if length < 2:
             raise NotEnoughCardSidesException(filename, length)
@@ -35,7 +35,7 @@ class Card(BaseModel):
     def load_from_file(cls, filename: str):
         """Loads card from file."""
         logger.info("Loading card from %s", filename)
-        sides: list[Side] = []
+        sides: List[Side] = []
         with open(filename, "r", encoding="utf-8") as file:
             for i, line in enumerate(file.readline()):
                 side = Side(id=i, content=line)

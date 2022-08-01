@@ -4,6 +4,7 @@
 import logging
 import os
 import uuid
+from typing import List
 
 from rich import prompt
 
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def load_flashcard(filename) -> Card:
     """Loads flashcard from file."""
-    sides: list[Side] = []
+    sides: List[Side] = []
     if not os.path.isfile(filename):
         raise TypeError
     with open(filename, encoding="utf-8") as file:
@@ -44,7 +45,7 @@ def check_directory(directory: str, interactive: bool):
         os.makedirs(directory)
 
 
-async def get_cards(context, regular_expression) -> list[Card]:
+async def get_cards(context, regular_expression) -> List[Card]:
     """Get cards filtered by regular expression."""
     directory = context.obj.flashcards_dir
     check_directory(directory, context.obj.interactive)
