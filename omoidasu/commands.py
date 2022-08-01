@@ -4,7 +4,7 @@
 import logging
 import random
 
-from omoidasu import crud, utils
+from omoidasu import crud, utils, models
 
 logger = logging.getLogger(__name__)
 
@@ -26,3 +26,11 @@ async def review_cards(context, regular_expression, max_cards):
     random.shuffle(all_questions)
     for question in all_questions:
         question.ask()
+
+
+async def add_card(context, sides: list[str]):
+    card_content = [models.Side(
+        id=i, content=content) for i, content in enumerate(sides)]
+    card = models.Card(filename=None, sides=card_content)
+    result = await crud.add_card(context, card)
+    return result

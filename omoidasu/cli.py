@@ -80,12 +80,19 @@ def list_cards(*args, **kwargs):
 @cli_commands.command("review")
 @click.argument("regular_expression", default=".*", required=True, type=str)
 @click.option(
-    "--max-cards", default=1000, type=int, help="Max number of cards to review."
-)
+    "--max-cards", default=1000, type=int, help="Max number of cards to review.")
 @click.pass_context
 def review_cards(*args, **kwargs):
     """Review all cards."""
     return _run_async_command(commands.review_cards, *args, **kwargs)
+
+
+@cli_commands.command("add")
+@click.argument("sides", nargs=-1)
+@click.pass_context
+def add_card(*args, **kwargs):
+    """Review all cards."""
+    return _run_async_command(commands.add_card, *args, **kwargs)
 
 
 def main():

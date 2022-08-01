@@ -3,6 +3,7 @@
 
 import logging
 import os
+import uuid
 
 from rich import prompt
 
@@ -20,7 +21,11 @@ def load_flashcard(filename) -> Card:
     with open(filename, encoding="utf-8") as file:
         for index, line in enumerate(file.readlines()):
             sides.append(Side(id=index, content=line))
-    return Card(filename=filename.name, sides=sides)
+    if isinstance(filename, os.DirEntry):
+        name = filename.name
+    else:
+        name = os.path.basename(filename)
+    return Card(filename=name, sides=sides)
 
 
 def check_directory(directory: str, interactive: bool):
@@ -42,10 +47,15 @@ async def get_cards(context, regular_expression) -> list[Card]:
     return flashcards
 
 
-# async def add_card(context, card: Card) -> Card:
-#     """Add new card. Returns created card."""
-#     result: Card
-#     return result
+async def add_card(context, card: Card) -> Card:
+    """Add new card. Returns created card."""
+    file_content = "\n".join([side.content for side in card.sides])
+    filename = str(uuid.uuid4())
+    path = os.path.join(context.obj.flashcards_dir, filename)
+    with open(path, "w", encoding="utf-8") as file:
+        file.write(file_content)
+    result = load_flashcard(path)
+    return result
 
 
 # async def remove_card(context, card: Card) -> bool:
