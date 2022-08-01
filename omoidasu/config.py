@@ -5,6 +5,7 @@ class AppConfig(BaseModel):
     """Config."""
     debug: bool
     verbose: bool
+    interactive: bool
     data_dir: str
     config_dir: str
     state_dir: str

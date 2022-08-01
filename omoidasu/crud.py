@@ -4,6 +4,8 @@
 import os
 import logging
 
+from rich import prompt
+
 from omoidasu.models import Card, Side
 
 logger = logging.getLogger(__name__)
@@ -20,10 +22,22 @@ def load_flashcard(filename) -> Card:
     return Card(filename=filename, sides=sides)
 
 
+def check_directory(directory: str, interactive: bool):
+    if os.path.exists(directory):
+        if not os.path.isdir(directory):
+            raise ValueError
+    else:
+        if interactive:
+            if not prompt.Confirm(
+                    f'Create flashcards directory "{directory}"?'):
+                raise ValueError
+        os.makedirs(directory)
+
+
 async def get_cards(context, regular_expression) -> list[Card]:
     """Get cards filtered by regular expression."""
     directory = context.obj.flashcards_dir
-    os.makedirs(directory)
+    check_directory(directory, context.obj.interactive)
     flashcards = [load_flashcard(file) for file in os.scandir(directory)]
     return flashcards
 

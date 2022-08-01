@@ -61,7 +61,7 @@ def _run_async_command(func: Any, *args, **kwargs) -> Any:
               type=str, default=_FLASHCARDS_DIR)
 @click.option("--verbose/--no-verbose",
               help="Show additional information")
-@click.option("--script/--no-script",
+@click.option("--interactive/--no-interactive",
               help="Use interactive features.")
 @click.option("--debug/--no-debug")
 @click.pass_context
