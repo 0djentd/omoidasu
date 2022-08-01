@@ -1,57 +1,61 @@
 import logging
-import time
-
-from typing import Any
+from typing import Iterator, Optional
 
 import rich
-
-from rich.prompt import Prompt
 from pydantic import BaseModel
+
+from omoidasu.exceptions import NotEnoughCardSidesException
 
 logger = logging.getLogger(__name__)
 
 
-class AppConfig(BaseModel):
-    """App config object."""
-    debug: bool
-    verbose: bool
-    api: str
-    slow: bool
-    session: Any | None = None
+class Side(BaseModel):
+    """Card side model."""
+
+    id: int  # Line number.
+    content: str
+
+    def __str__(self):
+        return self.content.replace("\n", "")
 
 
-class CardBase(BaseModel):
-    question: str
-    answer: str
-    ok: int = 0
-    fail: int = 0
-
-
-class Card(CardBase):
+class Card(BaseModel):
     """Card model."""
-    id: int
-    user_id: int
 
-    def show(self, context) -> None:  # pylint: disable=unused-argument
-        """Show card."""
-        rich.inspect(self, title=f"Card #{self.id}", docs=False, value=False)
+    filename: Optional[str]  # Can be None, if not saved to file.
+    sides: list[Side]
 
-    def review(self, context) -> None:  # pylint: disable=unused-argument
-        """Review card."""
-        rich.print(f"[grey]Card[/grey] #{self.id}")
-        rich.print(f"[yellow]Q[/yellow]: {self.question}")
-        time.sleep(1)
-        rich.print(f"[yellow]A[/yellow]: {self.answer}")
-        answer = Prompt.ask("[[green]Y[/green]/[red]n[/red]]").lower()
-        yes = ["", "yes", "y", "true", "t"]
-        if answer in yes:
-            rich.print("[green]Correct![/green]")
-            self.ok += 1
+    @classmethod
+    def load_from_file(cls, filename: str):
+        """Loads card from file."""
+        logger.info("Loading card from %s", filename)
+        sides: list[Side] = []
+        with open(filename, "r", encoding="utf-8") as file:
+            for i, line in enumerate(file.readline()):
+                side = Side(id=i, content=line)
+                sides.append(side)
+        if len(sides) == 0:
+            raise NotEnoughCardSidesException(filename, len(sides))
+        card = cls(filename=filename, sides=sides)
+        logger.info("Loaded %s from %s", card, filename)
+        return card
+
+    def get_questions(self) -> Iterator:
+        for side_1 in self.sides:
+            for side_2 in self.sides:
+                yield Question(card=self, question=side_1, answer=side_2)
+
+
+class Question(BaseModel):
+    card: Card
+    question: Side
+    answer: Side
+
+    def ask(self):
+        rich.print(f'[grey]Card "{self.card.filename}"[/grey]')
+        _ = input(self.question)
+        result = input(self.answer)
+        if result not in ["", "y", "Y", "\n"]:
+            rich.print("[red]Wrong.[/red]")
         else:
-            rich.print("[red]Wrong![/red]")
-            self.fail += 1
-
-
-class User(BaseModel):
-    username: str
-    email: str
+            rich.print("[green]Correct.[/green]")
