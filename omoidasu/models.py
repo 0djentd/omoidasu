@@ -14,6 +14,9 @@ class Side(BaseModel):
     id: int  # Line number.
     content: str
 
+    def __str__(self):
+        return self.content.replace("\n", "")
+
 
 class Card(BaseModel):
     """Card model."""
@@ -47,6 +50,7 @@ class Question(BaseModel):
     answer: Side
 
     def ask(self):
+        rich.print(f'[grey]Card "{self.card.filename}"[/grey]')
         _ = input(self.question)
         result = input(self.answer)
         if result not in ["", "y", "Y", "\n"]:

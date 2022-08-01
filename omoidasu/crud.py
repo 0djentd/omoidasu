@@ -20,7 +20,7 @@ def load_flashcard(filename) -> Card:
     with open(filename, encoding="utf-8") as file:
         for index, line in enumerate(file.readlines()):
             sides.append(Side(id=index, content=line))
-    return Card(filename=str(filename), sides=sides)
+    return Card(filename=filename.name, sides=sides)
 
 
 def check_directory(directory: str, interactive: bool):
