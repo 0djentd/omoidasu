@@ -1,13 +1,13 @@
 """CRUD functions."""
 
 
-import os
 import logging
+import os
 
 from rich import prompt
 
-from omoidasu.models import Card, Side
 from omoidasu import exceptions
+from omoidasu.models import Card, Side
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +29,7 @@ def check_directory(directory: str, interactive: bool):
             raise exceptions.FlashcardsDirectoryIsFile(directory)
     else:
         if interactive:
-            if not prompt.Confirm(
-                    f'Create flashcards directory "{directory}"?'):
+            if not prompt.Confirm(f'Create flashcards directory "{directory}"?'):
                 raise exceptions.FlashcardsDirectoryDoesNotExists(directory)
         os.makedirs(directory)
 

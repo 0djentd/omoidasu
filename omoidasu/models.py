@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 class Side(BaseModel):
     """Card side model."""
+
     id: int  # Line number.
     content: str
 
@@ -20,6 +21,7 @@ class Side(BaseModel):
 
 class Card(BaseModel):
     """Card model."""
+
     filename: Optional[str]  # Can be None, if not saved to file.
     sides: list[Side]
 

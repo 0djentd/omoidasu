@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 class AppConfig(BaseModel):
     """Config."""
+
     debug: bool
     verbose: bool
     interactive: bool

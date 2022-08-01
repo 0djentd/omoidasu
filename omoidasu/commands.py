@@ -4,7 +4,7 @@
 import logging
 import random
 
-from omoidasu import utils, crud
+from omoidasu import crud, utils
 
 logger = logging.getLogger(__name__)
 
