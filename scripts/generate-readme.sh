@@ -1,21 +1,27 @@
 #!/usr/bin/env bash
 
-echo '```'
-poetry run omoidasu --help
-echo '```'
-echo ''
-echo '```'
-poetry run omoidasu list --help
-echo '```'
-echo ''
-echo '```'
-poetry run omoidasu review --help
-echo '```'
-echo ''
-echo '```'
-poetry run omoidasu add --help
-echo '```'
-echo ''
-echo '```'
-poetry run omoidasu new --help
-echo '```'
+rm README.md
+cp README.template.md README.md
+
+function generate_readme() {
+    function generate_readme_for_command () {
+       echo '```'
+       eval "poetry run omoidasu $1 --help"
+       echo '```'
+       echo ''
+    }
+    
+    commands=('list' 'review' 'add' 'new')
+    
+    echo '```'
+    poetry run omoidasu --help
+    echo '```'
+    echo ''
+
+    for command in ${commands[*]}
+    do
+        generate_readme_for_command "$command"
+    done
+}
+
+generate_readme >> README.md

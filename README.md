@@ -72,3 +72,4 @@ Usage: omoidasu new [OPTIONS] [SIDES]...
 Options:
   --help  Show this message and exit.
 ```
+
