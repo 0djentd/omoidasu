@@ -8,9 +8,11 @@ import subprocess
 import tempfile
 from typing import List, Optional
 
-from rich import inspect
+import click
+import rich
 
 from omoidasu import crud, models, utils
+from omoidasu.exceptions import NotEnoughCardSidesException
 
 logger = logging.getLogger(__name__)
 
@@ -43,10 +45,19 @@ async def add_card(context, sides: List[str]):
 
 
 def add_cards_interactively(context, editor: str):
-    while True:
+    adding = True
+    count = 0
+    while adding:
         card: Optional[models.Card] = None
         with tempfile.NamedTemporaryFile() as file:
             subprocess.call([editor, file.name])
-            card = crud.load_flashcard(file.name)
-            inspect(card)
-        asyncio.run(crud.add_card(context, card))
+            try:
+                card = crud.load_flashcard(file.name)
+            except NotEnoughCardSidesException:
+                adding = False
+        if adding:
+            asyncio.run(crud.add_card(context, card))
+            count += 1
+        else:
+            rich.print(f"Added {count} cards.")
+            click.Abort()

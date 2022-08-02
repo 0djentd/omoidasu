@@ -104,8 +104,7 @@ def add_cards_interactively(*args, **kwargs):
     """Add cards interactively using text editor.
 Save empty file to finish adding cards.
 """
-    return _run_async_command(
-        commands.add_cards_interactively, *args, **kwargs)
+    return commands.add_cards_interactively(*args, **kwargs)
 
 
 def main():
