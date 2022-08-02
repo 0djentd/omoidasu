@@ -28,6 +28,8 @@ _CACHE_DIR = os.environ.get(_PREFIX + "_CACHE_DIR", _CACHE_DIR)
 _STATE_DIR = os.environ.get(_PREFIX + "_STATE_DIR", _STATE_DIR)
 _LOG_DIR = os.environ.get(_PREFIX + "_LOG_DIR", _LOG_DIR)
 _FLASHCARDS_DIR = os.environ.get(_PREFIX + "_FLASHCARDS_DIR", _FLASHCARDS_DIR)
+_EDITOR = os.environ.get(_PREFIX + "_EDITOR", "vim")
+_EDITOR = os.environ.get("EDITOR", _EDITOR)
 
 logger = logging.getLogger(__name__)
 
@@ -94,15 +96,16 @@ def add_card(*args, **kwargs):
     """Add card."""
     return _run_async_command(commands.add_card, *args, **kwargs)
 
+
 @cli_commands.command("add")
-@click.option("--editor", type=str)
+@click.option("--editor", type=str, default=_EDITOR)
 @click.pass_context
 def add_cards_interactively(*args, **kwargs):
     """Add cards interactively using text editor.
 Save empty file to finish adding cards.
 """
     return _run_async_command(
-            commands.add_cards_interactively, *args, **kwargs)
+        commands.add_cards_interactively, *args, **kwargs)
 
 
 def main():

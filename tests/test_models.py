@@ -13,6 +13,7 @@ def generate_card_sides(count):
         result.append(side)
     return result
 
+
 class ModelsTests(TestCase):
     def test_card_constructor(self):
         sides = generate_card_sides(2)

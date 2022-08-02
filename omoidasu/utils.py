@@ -18,7 +18,7 @@ def show_cards_list_grid(context, cards: List[Card], col: int = 3) -> None:
     for _ in range(col):
         table.add_column()
     for i in range(len(cards))[::col]:
-        table.add_row(*[str(card.id) for card in cards[i : i + col]])
+        table.add_row(*[str(card.id) for card in cards[i: i + col]])
     rich.print(table)
 
 
