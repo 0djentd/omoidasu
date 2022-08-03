@@ -47,17 +47,24 @@ def _run_async_command(func: Any, *args, **kwargs) -> Any:
 
 
 @click.group(help=INFO_TEXT)
-@click.option("--data-dir", type=str, default=_DATA_DIR, help="Data directory.")
-@click.option("--config-dir", type=str, default=_CONFIG_DIR, help="Config directory.")
-@click.option("--cache-dir", type=str, default=_CACHE_DIR, help="Cache directory.")
-@click.option("--state-dir", type=str, default=_STATE_DIR, help="State directory.")
-@click.option("--log-dir", type=str, default=_LOG_DIR, help="Log directory.")
-@click.option(
-    "--flashcards-dir", type=str, default=_FLASHCARDS_DIR, help="Flashcards directory."
-)
-@click.option("--verbose/--no-verbose", help="Show additional information.")
-@click.option("--interactive/--no-interactive", help="Use interactive features.")
-@click.option("--debug/--no-debug", help="Show debug information.")
+@click.option("--data-dir", type=str, default=_DATA_DIR,
+              help="Data directory.")
+@click.option("--config-dir", type=str, default=_CONFIG_DIR,
+              help="Config directory.")
+@click.option("--cache-dir", type=str, default=_CACHE_DIR,
+              help="Cache directory.")
+@click.option("--state-dir", type=str, default=_STATE_DIR,
+              help="State directory.")
+@click.option("--log-dir", type=str, default=_LOG_DIR,
+              help="Log directory.")
+@click.option("--flashcards-dir", type=str, default=_FLASHCARDS_DIR,
+              help="Flashcards directory.")
+@click.option("--verbose/--no-verbose",
+              help="Show additional information.")
+@click.option("--interactive/--no-interactive",
+              help="Use interactive features.")
+@click.option("--debug/--no-debug",
+              help="Show debug information.")
 @click.pass_context
 def cli_commands(context, **kwargs):
     """CLI commands"""
@@ -82,7 +89,8 @@ def list_cards(*args, **kwargs):
 @cli_commands.command("review")
 @click.argument("regular_expression", default=".*", required=True, type=str)
 @click.option(
-    "--max-cards", default=1000, type=int, help="Max number of cards to review.")
+    "--max-cards", default=1000, type=int,
+    help="Max number of cards to review.")
 @click.pass_context
 def review_cards(*args, **kwargs):
     """Review all cards."""
