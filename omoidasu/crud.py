@@ -3,8 +3,9 @@
 
 import logging
 import os
+import re
 import uuid
-from typing import List
+from typing import List, Optional
 
 from rich import prompt
 
@@ -45,12 +46,29 @@ def check_directory(directory: str, interactive: bool):
         os.makedirs(directory)
 
 
+def filter_by_regular_expression(
+        card: Card, regular_expression) -> Optional[Card]:
+    if card.filename:
+        if re.search(regular_expression, card.filename):
+            return card
+    for side in card.sides:
+        if re.search(regular_expression, side.content):
+            return card
+    return None
+
+
 async def get_cards(context, regular_expression) -> List[Card]:
     """Get cards filtered by regular expression."""
     directory = context.obj.flashcards_dir
     check_directory(directory, context.obj.interactive)
     flashcards = [load_flashcard(file) for file in os.scandir(directory)]
-    return flashcards
+    if not regular_expression:
+        return flashcards
+    filtered = []
+    for flashcard in flashcards:
+        if filter_by_regular_expression(flashcard, regular_expression):
+            filtered.append(flashcard)
+    return filtered
 
 
 async def add_card(context, card: Card) -> Card:
