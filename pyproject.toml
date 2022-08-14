@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "omoidasu"
-version = "0.4.8"
+version = "0.4.9"
 description = "Omoidasu."
 authors = ["0djentd"]
 readme = "README.md"
