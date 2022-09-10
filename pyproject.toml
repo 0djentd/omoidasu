@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "omoidasu"
-version = "0.4.10"
+version = "0.4.11"
 description = "CLI flashcards tool."
 authors = ["0djentd"]
 readme = "README.md"
